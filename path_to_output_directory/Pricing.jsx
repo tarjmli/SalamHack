@@ -1,6 +1,7 @@
-import PricingCard from "./PricingCard";
+import { useTranslation } from 'react-i18next';
 
 export default function Pricing() {
+  const { t } = useTranslation();
   return (
     <div className="pricing" id="pricing">
       <div className="container">

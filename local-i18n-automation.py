@@ -28,7 +28,7 @@ class I18nExtractor:
             
             extraction_prompt = f"""
                         You are an internationalization assistant for a {framework} project.
-                        Extract all user-facing text such as headers, titles, button text, paragraphs... from the following code and replace them with t('key') from {'react-i18next' if framework == 'React' else 'next-i18next'}, 
+                        Extract all user-facing text such as headers, titles, button text, paragraphs... from the following code and replace them with t('key') from {'react-i18next' if framework == 'React' else 'next-i18next'}, and import  useTranslation from 'react-i18next';
                         and return **only** the modified code along with the JSON mapping.
 
                         **Modify only:**  
