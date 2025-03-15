@@ -1,4 +1,10 @@
 {
-  "pricing_title": "PRICING",
-  "pricing_description": "Choose The Perfect plan for your business needs"
+  "footer_title": "MOURAFIK.",
+  "pricing_title": "pricing",
+  "about_title": "About",
+  "surgery": "Surgery",
+  "vet_treatment": "Vet Treatment",
+  "chat_with_us": "Chat with us",
+  "doctors": "Doctors",
+  "contact_us": "Contact us"
 }

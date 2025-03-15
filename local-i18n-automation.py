@@ -27,27 +27,31 @@ class I18nExtractor:
             print(f"Processing {file_path} ({len(code)} characters)")
             
             extraction_prompt = f"""
-                        You are an internationalization assistant for a {framework} project.
-                        Extract all user-facing text such as headers, titles, button text, paragraphs... from the following code and replace them with t('key') from {'react-i18next' if framework == 'React' else 'next-i18next'}, and import  useTranslation from 'react-i18next';
-                        and return **only** the modified code along with the JSON mapping.
+                                You are an internationalization assistant for a {framework} project.
+                                Extract all user-facing text such as headers, titles, button text, paragraphs... from the following code.
+                                Replace them with t('key') from {'react-i18next' if framework == 'React' else 'next-i18next'}, and import  useTranslation from 'react-i18next'; 
+                                and return **only** the modified code along with the JSON mapping.
 
-                        **Modify only:**  
-                        - Plain text inside JSX elements (`<h1>`, `<p>`, `<button>`, `<span>`, etc.).
-                        - `alt` attributes in `<img>` tags.
-                        - `aria-label` attributes in accessible elements.
+                                🚨 **Important Instructions**:
+                                1️⃣ **Return ONLY JSON**, no explanations, no extra text.
+                                2️⃣ **Modify only**:
+                                - Plain text inside JSX elements (`<h1>`, `<p>`, `<button>`, `<span>`, etc.).
+                                - `alt` attributes in `<img>` tags.
+                                - `aria-label` attributes in accessible elements.
+                                3️⃣ **DO NOT modify**:
+                                - Custom components (e.g., `<PricingCard type="Free" price={0} />`).
+                                - Dynamic expressions (e.g., `{'someVariable'}`).
+                                - JavaScript logic inside JSX.
+                                - CSS classes, IDs, or non-text properties.
 
-                        **Do NOT modify:**  
-                        - Custom components or their props and arguments, for example: <PricingCard type={"Free"} price={0} />, **DO NOT EDIT ANY OF THOSE WHATSOEVER AND DO NOT ADD BRACKETS!**.
-                        - Dynamic expressions (e.g., `{'`someVariable`'}`).
-                        - JavaScript logic inside JSX such as if-else statements.
-                        - CSS classes, IDs, or non-text properties.
+                                Here is the code to process:
 
-                        Here is the code to process:
-                        
-                        {code}
+                                ```jsx
+                                {code}
 
 
-                        Return your response in the following JSON format:
+
+                        you must strictly follow the following JSON format:
 
                         {{
                         "updated_code": "modified code here",
@@ -69,9 +73,11 @@ class I18nExtractor:
                 # ✅ WRITE THE UPDATED CODE BACK TO THE FILE
                 async with aiofiles.open(file_path, 'w', encoding='utf-8') as f:
                     await f.write(updated_code)
-
+                print(json_data)
                 return updated_code, i18n_json
+                
             else:
+                print(json_data)
                 print("Model response is not valid JSON. Returning original code.")
                 return code, {"error": "Model response is not valid JSON"}
 
