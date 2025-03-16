@@ -1,10 +1,17 @@
 {
-  "footer_title": "MOURAFIK.",
-  "pricing_title": "pricing",
-  "about_title": "About",
+  "landingPageTitle": "Medical Healthcare Tracking",
+  "landingPageDescription": "Track your medical health data with ease and get insights into your health data.",
+  "submitButton": "GET STARTED",
+  "watchImageAlt": "",
+  "landingImageAlt": "",
+  "trackYourHealthEffectively": "Track Your medical Health effectivly",
+  "gainInsightsIntoYourHealthData": "gain insights into your health data",
+  "title": "MOURAFIK.",
+  "pricingTitle": "pricing",
+  "aboutTitle": "About",
   "surgery": "Surgery",
-  "vet_treatment": "Vet Treatment",
-  "chat_with_us": "Chat with us",
+  "vetTreatment": "Vet Treatment",
+  "chatWithUs": "Chat with us",
   "doctors": "Doctors",
-  "contact_us": "Contact us"
+  "contactUs": "Contact us"
 }

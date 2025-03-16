@@ -1,10 +1,17 @@
 {
-  "footer_title": "MOURAFIK.",
-  "pricing_title": "التسعير",
-  "about_title": "معلومات عنا",
-  "surgery": "جراحة",
-  "vet_treatment": "علاج بيطري",
-  "chat_with_us": "دردشة معنا",
-  "doctors": "أطباء",
-  "contact_us": "اتصل بنا"
+  "landingPageTitle": "تتبع الرعاية الصحية الطبية",
+  "landingPageDescription": "تتبع بياناتك الصحية بسهولة و احصل على رؤى حول بياناتك الصحية.",
+  "submitButton": "ابدا",
+  "watchImageAlt": "",
+  "landingImageAlt": "",
+  "trackYourHealthEffectively": "تتبع صحتك الطبية بدقة",
+  "gainInsightsIntoYourHealthData": "احصل على رؤى حول بياناتك الصحية",
+  "title": "مرفق.",
+  "pricingTitle": "التسعير",
+  "aboutTitle": "عن",
+  "surgery": "الجراحة",
+  "vetTreatment": "علاج بيطري",
+  "chatWithUs": "دردشة معنا",
+  "doctors": "الاطباء",
+  "contactUs": "اتصل بنا"
 }

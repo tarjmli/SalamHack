@@ -9,6 +9,9 @@ import aiofiles
 from langchain_groq import ChatGroq
 from langchain.schema import HumanMessage
 
+    
+
+
 class I18nExtractor:
     def __init__(self, api_key: str, model_name: str = "llama-3.3-70b-versatile"):
         self.api_key = api_key
@@ -27,64 +30,77 @@ class I18nExtractor:
             print(f"Processing {file_path} ({len(code)} characters)")
             
             extraction_prompt = f"""
-                                You are an internationalization assistant for a {framework} project.
-                                Extract all user-facing text such as headers, titles, button text, paragraphs... from the following code.
-                                Replace them with t('key') from {'react-i18next' if framework == 'React' else 'next-i18next'}, and import  useTranslation from 'react-i18next'; 
-                                and return **only** the modified code along with the JSON mapping.
+            You are an internationalization assistant for a {framework} project.
+            Extract all user-facing text such as headers, titles, button text, paragraphs from the following code.
+            Replace them with t('key') from {'react-i18next' if framework == 'React' else 'next-i18next'}, and import useTranslation from 'react-i18next'; 
 
-                                🚨 **Important Instructions**:
-                                1️⃣ **Return ONLY JSON**, no explanations, no extra text.
-                                2️⃣ **Modify only**:
-                                - Plain text inside JSX elements (`<h1>`, `<p>`, `<button>`, `<span>`, etc.).
-                                - `alt` attributes in `<img>` tags.
-                                - `aria-label` attributes in accessible elements.
-                                3️⃣ **DO NOT modify**:
-                                - Custom components (e.g., `<PricingCard type="Free" price={0} />`).
-                                - Dynamic expressions (e.g., `{'someVariable'}`).
-                                - JavaScript logic inside JSX.
-                                - CSS classes, IDs, or non-text properties.
+            Here is the code to process:
 
-                                Here is the code to process:
+            ```jsx
+            {code}
+            ```
 
-                                ```jsx
-                                {code}
+            RESPONSE FORMAT:
+            Your response must be valid JSON with exactly these two fields:
+            {{
+                "updated_code": "// The complete modified code with t() functions",
+                "i18n_json": {{
+                    "key1": "Original text 1",
+                    "key2": "Original text 2"
+                }}
+            }}
 
+            IMPORTANT RULES:
+            1. The output must be VALID JSON - no comments, no trailing commas.
+            2. The "updated_code" must be the COMPLETE code, not just excerpts.
+            3. The "i18n_json" field must have ALL extracted strings.
+            4. Create logical keys based on the content (e.g., "welcomeMessage", "submitButton").
+            5. Process only human-readable text inside JSX, alt attributes, and aria-labels.
+            6. DO NOT modify dynamic expressions, component props, or JavaScript code.
+            7. Make sure to properly escape quotes in the JSON output.
+            8. Use DOUBLE QUOTES in the JSON response, not single quotes.
 
+            YOUR RESPONSE MUST CONTAIN ONLY THE JSON OBJECT - NO EXPLANATIONS OR MARKDOWN FORMATTING.
+            """
 
-                        you must strictly follow the following JSON format:
-
-                        {{
-                        "updated_code": "modified code here",
-                        "i18n_json": {{
-                            "key1": "value1",
-                            "key2": "value2"
-                        }}
-                        }}
-                        where key is the key we use in t() in the code and value is the text that we extracted from the code.
-                        Do not include any explanations, just the JSON object.
-                        """
-
-            response = await self.invoke_model(extraction_prompt)
-            json_data = self.extract_valid_json(response)
-
-            if json_data and "updated_code" in json_data and "i18n_json" in json_data:
-                updated_code, i18n_json = json_data["updated_code"], json_data["i18n_json"]
-
-                # ✅ WRITE THE UPDATED CODE BACK TO THE FILE
-                async with aiofiles.open(file_path, 'w', encoding='utf-8') as f:
-                    await f.write(updated_code)
-                print(json_data)
-                return updated_code, i18n_json
-                
-            else:
-                print(json_data)
-                print("Model response is not valid JSON. Returning original code.")
-                return code, {"error": "Model response is not valid JSON"}
+            # Try up to 3 times with backoff
+            max_attempts = 3
+            backoff_factor = 2
+            
+            for attempt in range(max_attempts):
+                try:
+                    response = await self.invoke_model(extraction_prompt)
+                    json_data = self.extract_valid_json(response)
+                    
+                    if json_data and "updated_code" in json_data and "i18n_json" in json_data:
+                        updated_code, i18n_json = json_data["updated_code"], json_data["i18n_json"]
+                        
+                        # Validate the JSON structure
+                        if not isinstance(i18n_json, dict):
+                            raise ValueError("i18n_json is not a dictionary")
+                        
+                        # Write the updated code back to the file
+                        async with aiofiles.open(file_path, 'w', encoding='utf-8') as f:
+                            await f.write(updated_code)
+                        
+                        return updated_code, i18n_json
+                        
+                    else:
+                        print(f"Attempt {attempt+1}: Invalid JSON response. Retrying...")
+                        await asyncio.sleep(backoff_factor ** attempt)
+                except Exception as e:
+                    print(f"Attempt {attempt+1} failed: {e}")
+                    if attempt < max_attempts - 1:
+                        await asyncio.sleep(backoff_factor ** attempt)
+                    else:
+                        raise
+                        
+            print("All attempts failed. Returning original code.")
+            return code, {"error": "Failed to extract valid JSON after multiple attempts"}
 
         except Exception as e:
             print(f"Error processing file {file_path}: {e}")
             return code, {"error": str(e)}
-
 
     # Translate extracted strings to target language
     async def translate_strings(self, strings: Dict[str, str], language: str) -> Dict[str, str]:
@@ -117,44 +133,95 @@ class I18nExtractor:
         except Exception as e:
             print(f"Error invoking model: {e}")
             raise
-
-    # Extract valid JSON from model response
+    
     def extract_valid_json(self, response_content: str) -> Optional[Dict[str, Any]]:
-        # First try to directly extract JSON
-        try:
-            json_match = re.search(r'({[\s\S]*})', response_content)
-            if json_match:
-                potential_json = json_match.group(1)
-                return json.loads(potential_json)
-            elif response_content.startswith("{") and response_content.endswith("}"):
-                return json.loads(response_content)
-        except json.JSONDecodeError:
-            pass
+        # Strip any markdown code block syntax
+        content = re.sub(r'```(?:json)?|```', '', response_content).strip()
         
-        # If direct extraction fails, use a secondary model prompt
+        # Try multiple extraction approaches
         try:
-            json_extraction_prompt = f"""
-            Extract only the valid JSON object from the following text. Return only the JSON object with no additional text.
-            If there are multiple JSON objects, extract the one that appears to contain i18n translations (key-value pairs of strings).
-
-            Input:
-            {response_content}
-
-            Output (valid JSON only):
-            """
+            # Direct parse if the entire string is JSON
+            try:
+                return json.loads(content)
+            except json.JSONDecodeError:
+                pass
             
-            json_extraction_response = self.chat.invoke([HumanMessage(content=json_extraction_prompt)])
-            json_text = json_extraction_response.content.strip()
-            
-            json_match = re.search(r'({[\s\S]*})', json_text)
+            # Find JSON object pattern
+            json_match = re.search(r'({[\s\S]*})', content)
             if json_match:
                 potential_json = json_match.group(1)
                 return json.loads(potential_json)
-            else:
-                return json.loads(json_text)
+                
+            # Look for multiple JSON objects and take the largest
+            json_objects = re.findall(r'({[^{}]*(?:{[^{}]*})*[^{}]*})', content)
+            if json_objects:
+                # Sort by length and try to parse each one starting with longest
+                for obj in sorted(json_objects, key=len, reverse=True):
+                    try:
+                        return json.loads(obj)
+                    except json.JSONDecodeError:
+                        continue
+                        
+            # If all else fails, use a cleanup approach to fix common JSON issues
+            cleaned_json = self._cleanup_json_string(content)
+            return json.loads(cleaned_json)
+            
         except Exception as e:
             print(f"Error extracting valid JSON: {e}")
+            print(f"Original content: {response_content[:100]}...")
             return None
+            
+    def _cleanup_json_string(self, json_str: str) -> str:
+        """Attempt to fix common JSON formatting issues"""
+        # Replace single quotes with double quotes (but not inside strings)
+        json_str = re.sub(r"(?<!['\"])'([^']*)'(?!['\"])", r'"\1"', json_str)
+        
+        # Fix trailing commas in arrays and objects
+        json_str = re.sub(r',\s*}', '}', json_str)
+        json_str = re.sub(r',\s*]', ']', json_str)
+        
+        # Add missing quotes around property names
+        json_str = re.sub(r'([{,]\s*)([a-zA-Z0-9_]+)(\s*:)', r'\1"\2"\3', json_str)
+        
+        return json_str
+
+    # # Extract valid JSON from model response
+    # def extract_valid_json(self, response_content: str) -> Optional[Dict[str, Any]]:
+    #     # First try to directly extract JSON
+    #     try:
+    #         json_match = re.search(r'({[\s\S]*})', response_content)
+    #         if json_match:
+    #             potential_json = json_match.group(1)
+    #             return json.loads(potential_json)
+    #         elif response_content.startswith("{") and response_content.endswith("}"):
+    #             return json.loads(response_content)
+    #     except json.JSONDecodeError:
+    #         pass
+        
+    #     # If direct extraction fails, use a secondary model prompt
+    #     try:
+    #         json_extraction_prompt = f"""
+    #         Extract only the valid JSON object from the following text. Return only the JSON object with no additional text.
+    #         If there are multiple JSON objects, extract the one that appears to contain i18n translations (key-value pairs of strings).
+
+    #         Input:
+    #         {response_content}
+
+    #         Output (valid JSON only):
+    #         """
+            
+    #         json_extraction_response = self.chat.invoke([HumanMessage(content=json_extraction_prompt)])
+    #         json_text = json_extraction_response.content.strip()
+            
+    #         json_match = re.search(r'({[\s\S]*})', json_text)
+    #         if json_match:
+    #             potential_json = json_match.group(1)
+    #             return json.loads(potential_json)
+    #         else:
+    #             return json.loads(json_text)
+    #     except Exception as e:
+    #         print(f"Error extracting valid JSON: {e}")
+    #         return None
 
     # Generate i18n configuration file
     def generate_i18n_config(self, languages: List[str], framework: str = "React") -> str:
@@ -202,6 +269,7 @@ module.exports = {{
   }},
 }};
 """
+
 
 # Main function to process files and generate translations
 async def process_components(
