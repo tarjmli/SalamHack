@@ -52,7 +52,7 @@ class I18nExtractor:
 
             IMPORTANT RULES:
             1. The output must be VALID JSON - no comments, no trailing commas.
-            2. The "updated_code" must be the COMPLETE code, not just excerpts.
+            2. The "updated_code" must be the COMPLETE code, not just excerpts. Do not comment any parts of the code, and it must be without syntax errors such as unclosed brackets or parentheses ...
             3. The "i18n_json" field must have ALL extracted strings.
             4. Create logical keys based on the content (e.g., "welcomeMessage", "submitButton").
             5. Process only human-readable text inside JSX, alt attributes, and aria-labels.
