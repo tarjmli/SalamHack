@@ -1,17 +1,10 @@
 {
-  "landingPageTitle": "تتبع الرعاية الصحية الطبية",
-  "landingPageDescription": "تتبع بياناتك الصحية بسهولة و احصل على رؤى حول بياناتك الصحية.",
-  "submitButton": "ابدا",
-  "watchImageAlt": "",
-  "landingImageAlt": "",
-  "trackYourHealthEffectively": "تتبع صحتك الطبية بدقة",
-  "gainInsightsIntoYourHealthData": "احصل على رؤى حول بياناتك الصحية",
-  "title": "مرفق.",
-  "pricingTitle": "التسعير",
-  "aboutTitle": "عن",
-  "surgery": "الجراحة",
+  "title": "MOURAFIK.",
+  "pricing": "التسعير",
+  "about": "معلومات عنا",
+  "surgery": "جراحة",
   "vetTreatment": "علاج بيطري",
   "chatWithUs": "دردشة معنا",
-  "doctors": "الاطباء",
+  "doctors": "الأطباء",
   "contactUs": "اتصل بنا"
 }
