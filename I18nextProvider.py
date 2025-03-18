@@ -30,7 +30,7 @@ def modify_main_file():
     with open(MAIN_FILE, "w", encoding="utf-8") as file:
         file.write(content)
 
-    print("✅ main.tsx updated successfully!")
+  
 
 if __name__ == "__main__":
     modify_main_file()
