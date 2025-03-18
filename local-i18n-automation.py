@@ -13,11 +13,12 @@ from langchain.schema import HumanMessage
 
 
 class I18nExtractor:
-    def __init__(self, api_key: str, model_name: str = "llama-3.3-70b-versatile"):
-        self.api_key = api_key
+    API_KEY = "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"  # Hardcoded API key
+
+    def __init__(self, model_name: str = "llama-3.3-70b-versatile"):
         self.model_name = model_name
         self.chat = ChatGroq(
-            groq_api_key=api_key,
+            groq_api_key=self.API_KEY,
             model_name=model_name
         )
 
@@ -52,7 +53,7 @@ class I18nExtractor:
 
             IMPORTANT RULES:
             1. The output must be VALID JSON - no comments, no trailing commas.
-            2. The "updated_code" must be the COMPLETE code, not just excerpts.
+            2. The "updated_code" must be the COMPLETE code, not just excerpts. Do not comment any parts of the code, and it must be without syntax errors such as unclosed brackets or parentheses ...
             3. The "i18n_json" field must have ALL extracted strings.
             4. Create logical keys based on the content (e.g., "welcomeMessage", "submitButton").
             5. Process only human-readable text inside JSX, alt attributes, and aria-labels.
@@ -289,7 +290,7 @@ async def process_components(
     os.makedirs(locales_dir, exist_ok=True)
     
     # Initialize extractor
-    extractor = I18nExtractor(api_key=api_key)
+    extractor = I18nExtractor()
     
     # Find all component files
     component_files = []
@@ -367,7 +368,7 @@ async def main():
     component_dir = "components"
     output_dir = "path_to_output_directory"
     framework = "React" 
-    languages = ["en", "ar", "fr"]
+    languages = ["en", "de", "fr"]
     extensions = [".jsx", ".tsx", ".js", ".ts"]
     
     await process_components(

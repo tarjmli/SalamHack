@@ -7,31 +7,31 @@ export default function Footer() {
     <footer>
       <div className="container">
         <div className="footer-head">
-          <h2>{t('title')}</h2>
+          <h2>{t('footerTitle')}</h2>
           <div className="icons"></div>
         </div>
         <div className="footer-box">
-          <FooterCard title={t('pricing')}>
-            <ul>
+          <FooterCard title={t('pricingTitle')}
+            ><ul>
               <li>{t('surgery')}</li>
               <li>{t('vetTreatment')}</li>
             </ul>
           </FooterCard>
-          <FooterCard title={t('about')}>
-            <ul>
+          <FooterCard title={t('aboutTitle')}
+            ><ul>
               <li>{t('chatWithUs')}</li>
               <li>{t('doctors')}</li>
               <li>{t('contactUs')}</li>
             </ul>
           </FooterCard>
-          <FooterCard title={t('pricing')}>
-            <ul>
+          <FooterCard title={t('pricingTitle')}
+            ><ul>
               <li>{t('surgery')}</li>
               <li>{t('vetTreatment')}</li>
             </ul>
           </FooterCard>
-          <FooterCard title={t('about')}>
-            <ul>
+          <FooterCard title={t('aboutTitle')}
+            ><ul>
               <li>{t('chatWithUs')}</li>
               <li>{t('doctors')}</li>
               <li>{t('contactUs')}</li>
